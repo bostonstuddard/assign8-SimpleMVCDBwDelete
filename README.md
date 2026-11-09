@@ -1,55 +1,57 @@
-## Assignment 8: Add the Ability to Delete a User and Move the Add User Form to a Separate Page
+# Assignment 8 — Simple MVC with MySQL Database and Delete
 
-This assignment builds on your Assignment 7, where you added a Database backend for Retrieving Users(SELECT) and Adding a User(INSERT). Ob this assignment, you will add the abulity to delete a user and move the add form to separate psge.
+**UAFS CSCE 20303 — Assignment 8**
 
-### Add the Ability to Delete a User Record
-To add a secure delete capability with client-side confirmation to a traditional server-side rendered Node.js/Express application (using EJS or HTML forms), follow this sequential approach.
+This project builds on Assignment 7's working MySQL-backed user management application. It implements the Assignment 8 changes:
 
-![Uer Manage Screen](listwdelete.png)
+- A separate **Add User** page at `/users/new` (instead of an inline form in the list).
+- A **Delete** button for every user on the list, with a JavaScript confirmation prompt.
+- A **POST** delete route and a parameterized MySQL `DELETE` query.
+- The original **SELECT** and **INSERT** operations, using **MySQL2 callbacks rather than Promises**, as required by Assignment 7.
 
-1. Create the Client-Side HTML Form and JS Confirmation:Avoid standard GET links to prevent accidental deletions from web crawlers or prefetching.In your view template (e.g., EJS), use an inline HTML form sending a POST request. Attach an onsubmit handler using standard Vanilla JS confirm() to prompt the user before sending the request.
-```HTML
-<!-- item-list.ejs -->
-<ul>
-  <% items.forEach(item => { %>
-    <li>
-      <span><%= item.name %></span>
-      
-      <!-- Delete Form -->
-      <form 
-        action="/items/<%= item.id %>/delete" 
-        method="POST" 
-        style="display:inline;"
-        onsubmit="return confirm('Are you sure you want to delete item: <%= item.name %>?');"
-      >
-        <button type="submit" class="btn btn-danger">Delete</button>
-      </form>
-    </li>
-  <% }); %>
-</ul>
-```
-2. Define the Express Route Handler:Process the POST request and execute database operations securely.In your Express router or main app file, declare the route handler for /items/:id/delete. Extract the resource identifier from req.params.id, perform the deletion query, and redirect the client back to the updated list.
+## Quick run / grading instructions
 
-```JavaScript
-// routes/items.js
-const express = require('express');
-const router = express.Router();
-const db = require('../db'); // Your database interface/pool
+This is a Node.js/Express application, not a static website. It requires **Node.js 18+** and a running MySQL or MariaDB server. Source uploaded to GitHub is not automatically running on localhost.
 
-router.post('/items/:id/delete', async (req, res, next) => {
-  const itemId = req.params.id;
+1. Open this repository in a terminal on the classroom VM (or any Node.js/MySQL machine).
+2. Install the declared dependencies with `npm ci` (or `npm install`).
+3. If the Assignment 7 database is not already set up, initialize it **once** using `sudo mysql < assignDB.sql`.
+4. Run `npm start` (equivalent to `node server.js`).
+5. Visit **http://localhost:3000**.
 
-  try {
-    // 1. Delete item from database (Example using SQL prepared statements)
-    const result = await db.query('DELETE FROM items WHERE id = ?', [itemId]);
+**Warning:** `assignDB.sql` drops and recreates the `assignDB` database, removing any records previously added. Do not rerun it if you need to preserve existing users.
 
-    // 2. Redirect client back to the main resource index
-    res.redirect('/items');
-  } catch (err) {
-    // 3. Forward unexpected errors to Express error handling middleware
-    next(err);
-  }
-});
+### MySQL connection defaults
 
-module.exports = router;
-```
+| Setting | Default |
+| --- | --- |
+| `DB_HOST` | `localhost` |
+| `DB_USER` | `assignDBuser` |
+| `DB_PASSWORD` | `assignDBpass` |
+| `DB_NAME` | `assignDB` |
+| `PORT` | `3000` |
+
+Override any setting using environment variables if your VM uses different database credentials.
+
+## Routes
+
+| Method | URL | Purpose |
+| --- | --- | --- |
+| `GET` | `/` | SELECT and display all users; Add User link and Delete buttons |
+| `GET` | `/users/new` | Separate Add User form |
+| `POST` | `/users` | Validate fields, INSERT new user and redirect to list |
+| `POST` | `/users/:id/delete` | DELETE selected user using a SQL placeholder; redirect to list |
+
+The delete confirmation uses built-in JavaScript `confirm()` on a POST form. Clicking **Cancel** does not send the request. The server validates numeric user IDs and uses parameterized SQL. The delete route cannot be triggered by a GET request.
+
+## Testing
+
+Run `npm test` for model/route/template tests, or view the GitHub **Actions** tab for automated test results after upload. These tests use mocked MySQL and Express to verify logic without touching the real database; a configured MySQL service is still necessary for the actual app.
+
+## Uploading to GitHub using only the web interface
+
+Unzip the supplied archive. Open your **Assignment 8 repository** at `https://github.com/bostonstuddard/assign8-SimpleMVCDBwDelete`, click **Add file → Upload files**, and upload the **contents** of the extracted folder, preserving `models`, `views`, `tests`, and `.github/workflows`. Replace the existing README when prompted. Commit changes. Do not upload just the ZIP as a file or nest all contents inside another project folder.
+
+**Classroom note:** `assignDB.sql` includes a password column with plaintext example data to match the instructor's schema; real applications should hash passwords and never display them.
+
+[Original Assignment 8 reference screenshot](https://github.com/UAFS-CSCE20303/assign8-SimpleMVCDBwDelete/blob/main/listwdelete.png)

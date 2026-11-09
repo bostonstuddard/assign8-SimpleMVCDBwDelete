@@ -1,0 +1,25 @@
+name: Verify Assignment 8
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Syntax checks
+        run: |
+          node --check server.js
+          node --check models/userDB.js
+      - name: Unit and route tests
+        run: npm test

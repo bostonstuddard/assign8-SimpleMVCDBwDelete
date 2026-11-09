@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage Users</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar bg-body-tertiary mb-4">
+        <div class="container"><span class="navbar-brand mb-0 h1">User Management</span></div>
+    </nav>
+    <main class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h1 class="h3 m-0">Manage Users</h1>
+            <a href="/users/new" class="btn btn-primary">Add User</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">First Name</th>
+                        <th scope="col">Last Name</th>
+                        <th scope="col">User Name</th>
+                        <th scope="col">Password</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% users.forEach(function (user) { %>
+                    <tr>
+                        <td><%= user.userID %></td>
+                        <td><%= user.fname %></td>
+                        <td><%= user.lname %></td>
+                        <td><%= user.username %></td>
+                        <td><%= user.passwd %></td>
+                        <td>
+                            <form action="/users/<%= user.userID %>/delete" method="post" class="m-0" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <% }); %>
+                    <% if (users.length === 0) { %>
+                    <tr><td colspan="6" class="text-center text-secondary">No users found.</td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>
